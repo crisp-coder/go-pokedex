@@ -1,4 +1,4 @@
-package main
+package pokeapi
 
 // Utility
 type Language struct {

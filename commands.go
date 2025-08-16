@@ -6,6 +6,8 @@ import (
 	"io"
 	"net/http"
 	"os"
+
+	"github.com/crisp-coder/go-pokedex/internal/pokeapi"
 )
 
 type CLICommand struct {
@@ -67,7 +69,7 @@ func makeCommandMap(cfg *Config) func(*Config) error {
 			return fmt.Errorf("Error getting map data from pokeapi %w", err)
 		}
 
-		map_response := NamedAPIResourceList{}
+		map_response := pokeapi.NamedAPIResourceList{}
 		err = json.Unmarshal(byteArray, &map_response)
 		if err != nil {
 			return fmt.Errorf("Error getting map data from pokeapi %w", err)
@@ -103,7 +105,7 @@ func makeCommandMapb(cfg *Config) func(*Config) error {
 			return fmt.Errorf("Error getting mapb data from pokeapi %w", err)
 		}
 
-		map_response := NamedAPIResourceList{}
+		map_response := pokeapi.NamedAPIResourceList{}
 		err = json.Unmarshal(byteArray, &map_response)
 		if err != nil {
 			return fmt.Errorf("Error getting mapb data from pokeapi %w", err)
