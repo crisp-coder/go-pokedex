@@ -31,14 +31,14 @@ func (c *Cache) Add(key string, val []byte) {
 	c.mu.Unlock()
 }
 
-func (c *Cache) Get(key string) (cacheEntry, bool) {
+func (c *Cache) Get(key string) ([]byte, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	if val, ok := c.cache_map[key]; ok {
-		return val, true
+		return val.bytes, true
 	} else {
-		return cacheEntry{}, false
+		return []byte{}, false
 	}
 }
 

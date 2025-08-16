@@ -1,8 +1,0 @@
-func NewCache(t time.Duration) *Cache {
-	c := &Cache{
-		cache_map: make(map[string]cacheEntry, 0),
-		interval:  t,
-	}
-	go c.reapLoop(c.interval)
-	return c
-}
