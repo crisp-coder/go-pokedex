@@ -12,8 +12,7 @@ import (
 func main() {
 	// Load objects
 	cfg := pokeapi.Config{
-		Next: "https://pokeapi.co/api/v2/location-area/",
-		Prev: "",
+		API: "https://pokeapi.co/api/v2/",
 	}
 	pokeClient := pokeapi.NewPokeClient(time.Second * 10)
 	registry := pokeapi.MakeCommandRegistry(&cfg, pokeClient)
@@ -45,10 +44,18 @@ func main() {
 
 		if pokedex_command.Name == "explore" {
 			if len(cleanedInput) == 2 {
-				cfg.ExploreTarget = "https://pokeapi.co/api/v2/location-area/" + cleanedInput[1]
+				cfg.ExploreTarget = cleanedInput[1]
 			} else {
-				fmt.Println("Missing location area id or name.")
+				fmt.Println("Missing location area name.")
 				continue
+			}
+		}
+
+		if pokedex_command.Name == "catch" {
+			if len(cleanedInput) == 2 {
+				cfg.CaptureTarget = cleanedInput[1]
+			} else {
+				fmt.Println("Missing pokemon name.")
 			}
 		}
 

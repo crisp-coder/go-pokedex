@@ -7,9 +7,11 @@ import (
 )
 
 type Config struct {
-	Next          string
-	Prev          string
+	API           string
+	NextArea      string
+	PrevArea      string
 	ExploreTarget string
+	CaptureTarget string
 }
 
 type CLICommand struct {
@@ -57,7 +59,7 @@ func MakeCommandRegistry(cfg *Config, client *PokeClient) map[string]CLICommand 
 
 func makeCommandExplore(cfg *Config, client *PokeClient) func() error {
 	return func() error {
-		bytes, err := client.Get(cfg.ExploreTarget)
+		bytes, err := client.Get(cfg.API + "location-area/" + cfg.ExploreTarget)
 		if err != nil {
 			return fmt.Errorf("error getting explore area data: %w", err)
 		}
@@ -83,12 +85,11 @@ func makeCommandExplore(cfg *Config, client *PokeClient) func() error {
 
 func makeCommandMap(cfg *Config, client *PokeClient) func() error {
 	return func() error {
-		if cfg.Next == "" || cfg.Next == "null" {
-			fmt.Println("You are on the last page.")
-			return nil
+		if cfg.NextArea == "" || cfg.NextArea == "null" {
+			cfg.NextArea = "?offset=0&limit=20"
 		}
 
-		bytes, err := client.Get(cfg.Next)
+		bytes, err := client.Get(cfg.API + "location-area/" + cfg.NextArea)
 		if err != nil {
 			return fmt.Errorf("error getting map data from pokeapi: %w", err)
 		}
@@ -99,9 +100,16 @@ func makeCommandMap(cfg *Config, client *PokeClient) func() error {
 			return fmt.Errorf("error getting map data from pokeapi: %w", err)
 		}
 
-		if cfg.Next != "" && cfg.Next != "null" {
-			cfg.Next = map_response.Next
-			cfg.Prev = map_response.Previous
+		if map_response.Next != "" && map_response.Next != "null" {
+			cfg.NextArea = map_response.Next[40:]
+		} else {
+			cfg.NextArea = ""
+		}
+
+		if map_response.Previous != "" && map_response.Previous != "null" {
+			cfg.PrevArea = map_response.Previous[40:]
+		} else {
+			cfg.PrevArea = ""
 		}
 
 		for _, value := range map_response.Results {
@@ -114,12 +122,11 @@ func makeCommandMap(cfg *Config, client *PokeClient) func() error {
 
 func makeCommandMapb(cfg *Config, client *PokeClient) func() error {
 	return func() error {
-		if cfg.Prev == "" || cfg.Prev == "null" {
-			fmt.Println("You are on the first page.")
-			return nil
+		if cfg.PrevArea == "" || cfg.PrevArea == "null" {
+			cfg.PrevArea = "?offset=1063&limit=20"
 		}
 
-		bytes, err := client.Get(cfg.Prev)
+		bytes, err := client.Get(cfg.API + "location-area/" + cfg.PrevArea)
 		if err != nil {
 			return fmt.Errorf("error getting mapb data from pokeapi: %w", err)
 		}
@@ -130,9 +137,16 @@ func makeCommandMapb(cfg *Config, client *PokeClient) func() error {
 			return fmt.Errorf("error getting mapb data from pokeapi: %w", err)
 		}
 
-		if cfg.Prev != "" && cfg.Prev != "null" {
-			cfg.Next = map_response.Next
-			cfg.Prev = map_response.Previous
+		if map_response.Next != "" && map_response.Next != "null" {
+			cfg.NextArea = map_response.Next[40:]
+		} else {
+			cfg.NextArea = ""
+		}
+
+		if map_response.Previous != "" && map_response.Previous != "null" {
+			cfg.PrevArea = map_response.Previous[40:]
+		} else {
+			cfg.PrevArea = ""
 		}
 
 		for _, value := range map_response.Results {
