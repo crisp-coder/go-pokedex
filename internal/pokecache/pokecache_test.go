@@ -8,11 +8,11 @@ import (
 )
 
 func TestNewCache(t *testing.T) {
-	c := NewCache(time.Second * 5)
+	c := NewPokeCache(time.Second * 5)
 	if c == nil {
 		t.Errorf("NewCache() returned nil")
 	}
-	if reflect.TypeOf(c).Elem().Name() != "Cache" {
+	if reflect.TypeOf(c).Elem().Name() != "PokeCache" {
 		t.Errorf("c is NOT cache type")
 	}
 	if c.cache_map == nil {
@@ -21,7 +21,7 @@ func TestNewCache(t *testing.T) {
 }
 
 func TestAdd(t *testing.T) {
-	c := NewCache(time.Second * 5)
+	c := NewPokeCache(time.Second * 5)
 	key := "https://url1.com"
 	key2 := "http://pokeapi.co/api/v2/pokemon/charizard"
 	str := "{response:ABC123}"
@@ -35,7 +35,7 @@ func TestAdd(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	c := NewCache(time.Second * 5)
+	c := NewPokeCache(time.Second * 5)
 
 	cases := []struct {
 		input    map[string]string
@@ -70,7 +70,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestReapLoop(t *testing.T) {
-	c := NewCache(time.Millisecond * 10)
+	c := NewPokeCache(time.Millisecond * 10)
 	key := "https://url1.com"
 	key2 := "http://pokeapi.co/api/v2/pokemon/charizard"
 	str := "{response:ABC123}"

@@ -5,19 +5,18 @@ import (
 	"time"
 )
 
-type Cache struct {
+type PokeCache struct {
 	cache_map map[string]cacheEntry
 	mu        sync.Mutex
 }
 
 type cacheEntry struct {
-	key        string
 	bytes      []byte
 	created_at time.Time
 }
 
-func NewCache(t time.Duration) *Cache {
-	c := &Cache{
+func NewPokeCache(t time.Duration) *PokeCache {
+	c := &PokeCache{
 		cache_map: make(map[string]cacheEntry, 0),
 		mu:        sync.Mutex{},
 	}
@@ -25,13 +24,13 @@ func NewCache(t time.Duration) *Cache {
 	return c
 }
 
-func (c *Cache) Add(key string, val []byte) {
+func (c *PokeCache) Add(key string, val []byte) {
 	c.mu.Lock()
-	c.cache_map[key] = cacheEntry{key: key, bytes: val, created_at: time.Now()}
+	c.cache_map[key] = cacheEntry{bytes: val, created_at: time.Now()}
 	c.mu.Unlock()
 }
 
-func (c *Cache) Get(key string) ([]byte, bool) {
+func (c *PokeCache) Get(key string) ([]byte, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -42,7 +41,7 @@ func (c *Cache) Get(key string) ([]byte, bool) {
 	}
 }
 
-func (c *Cache) reapLoop(t time.Duration) {
+func (c *PokeCache) reapLoop(t time.Duration) {
 	if t > 0 {
 		reapTicker := time.NewTicker(t)
 		for tick := range reapTicker.C {
