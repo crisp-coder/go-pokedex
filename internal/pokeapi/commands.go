@@ -15,16 +15,16 @@ type Config struct {
 type CLICommand struct {
 	Name        string
 	Description string
-	Callback    func(*Config) error
+	Callback    func() error
 }
 
 func MakeCommandRegistry(cfg *Config, client *PokeClient) map[string]CLICommand {
 	command_registry := make(map[string]CLICommand)
-	commandHelp := makeCommandHelp(command_registry)
-	commandExit := makeCommandExit()
-	commandMap := makeCommandMap(client)
-	commandMapb := makeCommandMapb(client)
-	commandExplore := makeCommandExplore(client)
+	commandHelp := makeCommandHelp(cfg, command_registry)
+	commandExit := makeCommandExit(cfg)
+	commandMap := makeCommandMap(cfg, client)
+	commandMapb := makeCommandMapb(cfg, client)
+	commandExplore := makeCommandExplore(cfg, client)
 
 	command_registry["exit"] = CLICommand{
 		Name:        "exit",
@@ -55,29 +55,34 @@ func MakeCommandRegistry(cfg *Config, client *PokeClient) map[string]CLICommand 
 	return command_registry
 }
 
-func makeCommandExplore(client *PokeClient) func(*Config) error {
-	return func(cfg *Config) error {
+func makeCommandExplore(cfg *Config, client *PokeClient) func() error {
+	return func() error {
 		bytes, err := client.Get(cfg.ExploreTarget)
 		if err != nil {
-			return fmt.Errorf("Error getting explore area data: %w", err)
+			return fmt.Errorf("error getting explore area data: %w", err)
 		}
 
-		explore_response := LocationArea{}
-		err = json.Unmarshal(bytes, &explore_response)
+		exploreResponse := LocationArea{}
+		err = json.Unmarshal(bytes, &exploreResponse)
 		if err != nil {
-			return fmt.Errorf("Error getting explore area data: %w", err)
+			return fmt.Errorf("error getting explore area data: %w", err)
 		}
 
-		for _, pokemon_encounter := range explore_response.Pokemon_encounters {
-			fmt.Printf("%v\n", pokemon_encounter.Pokemon.Name)
+		if len(exploreResponse.Pokemon_encounters) > 0 {
+			for _, encounter := range exploreResponse.Pokemon_encounters {
+				fmt.Printf(" - %v\n", encounter.Pokemon.Name)
+			}
+
+		} else {
+			fmt.Println("No pokemon found in this area.")
 		}
 
 		return nil
 	}
 }
 
-func makeCommandMap(client *PokeClient) func(*Config) error {
-	return func(cfg *Config) error {
+func makeCommandMap(cfg *Config, client *PokeClient) func() error {
+	return func() error {
 		if cfg.Next == "" || cfg.Next == "null" {
 			fmt.Println("You are on the last page.")
 			return nil
@@ -85,13 +90,13 @@ func makeCommandMap(client *PokeClient) func(*Config) error {
 
 		bytes, err := client.Get(cfg.Next)
 		if err != nil {
-			return fmt.Errorf("Error getting map data from pokeapi: %w", err)
+			return fmt.Errorf("error getting map data from pokeapi: %w", err)
 		}
 
 		map_response := NamedAPIResourceList{}
 		err = json.Unmarshal(bytes, &map_response)
 		if err != nil {
-			return fmt.Errorf("Error getting map data from pokeapi: %w", err)
+			return fmt.Errorf("error getting map data from pokeapi: %w", err)
 		}
 
 		if cfg.Next != "" && cfg.Next != "null" {
@@ -107,8 +112,8 @@ func makeCommandMap(client *PokeClient) func(*Config) error {
 	}
 }
 
-func makeCommandMapb(client *PokeClient) func(*Config) error {
-	return func(cfg *Config) error {
+func makeCommandMapb(cfg *Config, client *PokeClient) func() error {
+	return func() error {
 		if cfg.Prev == "" || cfg.Prev == "null" {
 			fmt.Println("You are on the first page.")
 			return nil
@@ -116,13 +121,13 @@ func makeCommandMapb(client *PokeClient) func(*Config) error {
 
 		bytes, err := client.Get(cfg.Prev)
 		if err != nil {
-			return fmt.Errorf("Error getting mapb data from pokeapi: %w", err)
+			return fmt.Errorf("error getting mapb data from pokeapi: %w", err)
 		}
 
 		map_response := NamedAPIResourceList{}
 		err = json.Unmarshal(bytes, &map_response)
 		if err != nil {
-			return fmt.Errorf("Error getting mapb data from pokeapi: %w", err)
+			return fmt.Errorf("error getting mapb data from pokeapi: %w", err)
 		}
 
 		if cfg.Prev != "" && cfg.Prev != "null" {
@@ -138,16 +143,16 @@ func makeCommandMapb(client *PokeClient) func(*Config) error {
 	}
 }
 
-func makeCommandExit() func(*Config) error {
-	return func(cfg *Config) error {
+func makeCommandExit(cfg *Config) func() error {
+	return func() error {
 		fmt.Print("Closing the Pokedex... Goodbye!\n")
 		os.Exit(0)
 		return nil
 	}
 }
 
-func makeCommandHelp(registry map[string]CLICommand) func(*Config) error {
-	return func(cfg *Config) error {
+func makeCommandHelp(cfg *Config, registry map[string]CLICommand) func() error {
+	return func() error {
 		fmt.Print("Welcome to the Pokedex!\n")
 		fmt.Print("Usage:\n\n")
 		for key := range registry {

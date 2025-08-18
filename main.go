@@ -53,7 +53,7 @@ func main() {
 		}
 
 		// Run command
-		err := pokedex_command.Callback(&cfg)
+		err := pokedex_command.Callback()
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
 			continue
