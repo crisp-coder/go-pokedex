@@ -37,16 +37,25 @@ func main() {
 
 		// Check if command exists
 		command := cleanedInput[0]
-		val, ok := registry[command]
+		pokedex_command, ok := registry[command]
 		if !ok {
 			fmt.Println("Unknown command")
 			continue
 		}
 
+		if pokedex_command.Name == "explore" {
+			if len(cleanedInput) == 2 {
+				cfg.ExploreTarget = "https://pokeapi.co/api/v2/location-area/" + cleanedInput[1]
+			} else {
+				fmt.Println("Missing location area id or name.")
+				continue
+			}
+		}
+
 		// Run command
-		err := val.Callback(&cfg)
+		err := pokedex_command.Callback(&cfg)
 		if err != nil {
-			fmt.Printf("Error: %v", err)
+			fmt.Printf("Error: %v\n", err)
 			continue
 		}
 	}

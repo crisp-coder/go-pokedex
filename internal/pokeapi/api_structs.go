@@ -33,11 +33,11 @@ type Effect struct {
 }
 
 type Encounter struct {
-	Min_level        int
-	Max_level        int
-	Condition_values []EncounterConditionValue
-	Chance           int
-	Method           EncounterMethod
+	Min_level        int                       `json:"min_level"`
+	Max_level        int                       `json:"max_level"`
+	Condition_values []EncounterConditionValue `json:"condition_values"`
+	Chance           int                       `json:"chance"`
+	Method           NamedAPIResource          `json:"method"`
 }
 
 type FlavorText struct {
@@ -80,9 +80,10 @@ type VerboseEffect struct {
 }
 
 type VersionEncounterDetail struct {
-	Version           Version
-	Max_chance        int
-	Encounter_details []Encounter
+	Max_level         int         `json:"max_level"`
+	Version           Version     `json:"version"`
+	Max_chance        int         `json:"max_chance"`
+	Encounter_details []Encounter `json:"encounter_details"`
 }
 
 type VersionGameIndex struct {
@@ -102,14 +103,14 @@ type LocationArea struct {
 	Name                   string                `json:"name"`
 	Game_index             int                   `json:"game_index"`
 	Encounter_method_rates []EncounterMethodRate `json:"encounter_method_rates"`
-	Location               Location              `json:"location"`
+	Location               NamedAPIResource      `json:"location"`
 	Names                  []Name                `json:"names"`
 	Pokemon_encounters     []PokemonEncounter    `json:"pokemon_encounters"`
 }
 
 type EncounterMethodRate struct {
-	Encounter_method EncounterMethod
-	Version_details  EncounterVersionDetails
+	Encounter_method NamedAPIResource         `json:"encounter_method"`
+	Version_details  []EncounterVersionDetail `json:"version_details"`
 }
 
 type EncounterMethod struct {
@@ -120,10 +121,10 @@ type EncounterMethod struct {
 }
 
 type EncounterConditionValue struct {
-	Id        int
-	Name      string
-	Condition EncounterCondition
-	Names     []Name
+	//Id        int
+	//Name      string
+	//Condition EncounterCondition
+	//Names     []Name
 }
 
 type EncounterCondition struct {
@@ -133,9 +134,9 @@ type EncounterCondition struct {
 	Values []EncounterConditionValue
 }
 
-type EncounterVersionDetails struct {
-	Rate    int
-	Version Version
+type EncounterVersionDetail struct {
+	Rate    int              `json:"rate"`
+	Version NamedAPIResource `json:"version"`
 }
 
 type Machine struct {
@@ -204,13 +205,13 @@ type VersionGroup struct {
 }
 
 type PokemonEncounter struct {
-	Pokemon         Pokemon
-	Version_details VersionEncounterDetail
+	Pokemon         NamedAPIResource         `json:"pokemon"`
+	Version_details []VersionEncounterDetail `json:"version_details"`
 }
 
 type Pokemon struct {
 	Id              int
-	Name            string
+	Name            string `json:"name"`
 	Base_experience int
 	Height          int
 	Is_default      bool

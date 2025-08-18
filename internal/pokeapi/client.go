@@ -8,11 +8,6 @@ import (
 	"github.com/crisp-coder/go-pokedex/internal/pokecache"
 )
 
-type Config struct {
-	Next string
-	Prev string
-}
-
 type PokeClient struct {
 	client http.Client
 	cache  *pokecache.PokeCache

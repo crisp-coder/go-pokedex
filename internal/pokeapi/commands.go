@@ -6,44 +6,77 @@ import (
 	"os"
 )
 
+type Config struct {
+	Next          string
+	Prev          string
+	ExploreTarget string
+}
+
 type CLICommand struct {
-	name        string
-	description string
+	Name        string
+	Description string
 	Callback    func(*Config) error
 }
 
 func MakeCommandRegistry(cfg *Config, client *PokeClient) map[string]CLICommand {
 	command_registry := make(map[string]CLICommand)
-	commandHelp := makeCommandHelp(cfg, command_registry)
-	commandExit := makeCommandExit(cfg)
-	commandMap := makeCommandMap(cfg, client)
-	commandMapb := makeCommandMapb(cfg, client)
+	commandHelp := makeCommandHelp(command_registry)
+	commandExit := makeCommandExit()
+	commandMap := makeCommandMap(client)
+	commandMapb := makeCommandMapb(client)
+	commandExplore := makeCommandExplore(client)
 
 	command_registry["exit"] = CLICommand{
-		name:        "exit",
-		description: "Exit the Pokedex",
+		Name:        "exit",
+		Description: "Exit the Pokedex",
 		Callback:    commandExit,
 	}
 	command_registry["help"] = CLICommand{
-		name:        "help",
-		description: "Prints a list of commands",
+		Name:        "help",
+		Description: "Prints a list of commands",
 		Callback:    commandHelp,
 	}
 	command_registry["map"] = CLICommand{
-		name:        "map",
-		description: "Returns a list of next 20 map areas",
+		Name:        "map",
+		Description: "Returns a list of next 20 map areas",
 		Callback:    commandMap,
 	}
 	command_registry["mapb"] = CLICommand{
-		name:        "mapb",
-		description: "Returns a list of previous 20 map areas",
+		Name:        "mapb",
+		Description: "Returns a list of previous 20 map areas",
 		Callback:    commandMapb,
+	}
+	command_registry["explore"] = CLICommand{
+		Name:        "explore",
+		Description: "Asks for area to explore, then queries pokemon in area.",
+		Callback:    commandExplore,
 	}
 
 	return command_registry
 }
 
-func makeCommandMap(cfg *Config, client *PokeClient) func(*Config) error {
+func makeCommandExplore(client *PokeClient) func(*Config) error {
+	return func(cfg *Config) error {
+		bytes, err := client.Get(cfg.ExploreTarget)
+		if err != nil {
+			return fmt.Errorf("Error getting explore area data: %w", err)
+		}
+
+		explore_response := LocationArea{}
+		err = json.Unmarshal(bytes, &explore_response)
+		if err != nil {
+			return fmt.Errorf("Error getting explore area data: %w", err)
+		}
+
+		for _, pokemon_encounter := range explore_response.Pokemon_encounters {
+			fmt.Printf("%v\n", pokemon_encounter.Pokemon.Name)
+		}
+
+		return nil
+	}
+}
+
+func makeCommandMap(client *PokeClient) func(*Config) error {
 	return func(cfg *Config) error {
 		if cfg.Next == "" || cfg.Next == "null" {
 			fmt.Println("You are on the last page.")
@@ -52,13 +85,13 @@ func makeCommandMap(cfg *Config, client *PokeClient) func(*Config) error {
 
 		bytes, err := client.Get(cfg.Next)
 		if err != nil {
-			return fmt.Errorf("Error getting map data from pokeapi %w", err)
+			return fmt.Errorf("Error getting map data from pokeapi: %w", err)
 		}
 
 		map_response := NamedAPIResourceList{}
 		err = json.Unmarshal(bytes, &map_response)
 		if err != nil {
-			return fmt.Errorf("Error getting map data from pokeapi %w", err)
+			return fmt.Errorf("Error getting map data from pokeapi: %w", err)
 		}
 
 		if cfg.Next != "" && cfg.Next != "null" {
@@ -74,7 +107,7 @@ func makeCommandMap(cfg *Config, client *PokeClient) func(*Config) error {
 	}
 }
 
-func makeCommandMapb(cfg *Config, client *PokeClient) func(*Config) error {
+func makeCommandMapb(client *PokeClient) func(*Config) error {
 	return func(cfg *Config) error {
 		if cfg.Prev == "" || cfg.Prev == "null" {
 			fmt.Println("You are on the first page.")
@@ -83,13 +116,13 @@ func makeCommandMapb(cfg *Config, client *PokeClient) func(*Config) error {
 
 		bytes, err := client.Get(cfg.Prev)
 		if err != nil {
-			return fmt.Errorf("Error getting mapb data from pokeapi %w", err)
+			return fmt.Errorf("Error getting mapb data from pokeapi: %w", err)
 		}
 
 		map_response := NamedAPIResourceList{}
 		err = json.Unmarshal(bytes, &map_response)
 		if err != nil {
-			return fmt.Errorf("Error getting mapb data from pokeapi %w", err)
+			return fmt.Errorf("Error getting mapb data from pokeapi: %w", err)
 		}
 
 		if cfg.Prev != "" && cfg.Prev != "null" {
@@ -105,7 +138,7 @@ func makeCommandMapb(cfg *Config, client *PokeClient) func(*Config) error {
 	}
 }
 
-func makeCommandExit(cfg *Config) func(*Config) error {
+func makeCommandExit() func(*Config) error {
 	return func(cfg *Config) error {
 		fmt.Print("Closing the Pokedex... Goodbye!\n")
 		os.Exit(0)
@@ -113,12 +146,12 @@ func makeCommandExit(cfg *Config) func(*Config) error {
 	}
 }
 
-func makeCommandHelp(cfg *Config, registry map[string]CLICommand) func(*Config) error {
+func makeCommandHelp(registry map[string]CLICommand) func(*Config) error {
 	return func(cfg *Config) error {
 		fmt.Print("Welcome to the Pokedex!\n")
 		fmt.Print("Usage:\n\n")
 		for key := range registry {
-			fmt.Printf("%v: %v\n", registry[key].name, registry[key].description)
+			fmt.Printf("%v: %v\n", registry[key].Name, registry[key].Description)
 		}
 		return nil
 	}
