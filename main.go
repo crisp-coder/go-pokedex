@@ -13,6 +13,9 @@ func main() {
 	// Load objects
 	cfg := pokeapi.Config{
 		API: "https://pokeapi.co/api/v2/",
+		Pokedex: pokeapi.TempPokedex{
+			KnownPokemon: make(map[string]pokeapi.Pokemon),
+		},
 	}
 	pokeClient := pokeapi.NewPokeClient(time.Second * 10)
 	registry := pokeapi.MakeCommandRegistry(&cfg, pokeClient)

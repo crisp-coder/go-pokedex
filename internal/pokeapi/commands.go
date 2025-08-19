@@ -12,6 +12,11 @@ type Config struct {
 	PrevArea      string
 	ExploreTarget string
 	CaptureTarget string
+	Pokedex       TempPokedex
+}
+
+type TempPokedex struct {
+	KnownPokemon map[string]Pokemon
 }
 
 type CLICommand struct {
@@ -27,6 +32,7 @@ func MakeCommandRegistry(cfg *Config, client *PokeClient) map[string]CLICommand 
 	commandMap := makeCommandMap(cfg, client)
 	commandMapb := makeCommandMapb(cfg, client)
 	commandExplore := makeCommandExplore(cfg, client)
+	commandCatch := makeCommandCatch(cfg, client)
 
 	command_registry["exit"] = CLICommand{
 		Name:        "exit",
@@ -35,26 +41,52 @@ func MakeCommandRegistry(cfg *Config, client *PokeClient) map[string]CLICommand 
 	}
 	command_registry["help"] = CLICommand{
 		Name:        "help",
-		Description: "Prints a list of commands",
+		Description: "Lists commands.",
 		Callback:    commandHelp,
 	}
 	command_registry["map"] = CLICommand{
 		Name:        "map",
-		Description: "Returns a list of next 20 map areas",
+		Description: "Lists next 20 map areas.",
 		Callback:    commandMap,
 	}
 	command_registry["mapb"] = CLICommand{
 		Name:        "mapb",
-		Description: "Returns a list of previous 20 map areas",
+		Description: "Lists previous 20 map areas.",
 		Callback:    commandMapb,
 	}
 	command_registry["explore"] = CLICommand{
 		Name:        "explore",
-		Description: "Asks for area to explore, then queries pokemon in area.",
+		Description: "Explore an area. Lists pokemon in area. Accepts a Name.",
 		Callback:    commandExplore,
+	}
+	command_registry["catch"] = CLICommand{
+		Name:        "catch",
+		Description: "Attempt to catch a pokemon. Accepts a Name.",
+		Callback:    commandCatch,
 	}
 
 	return command_registry
+}
+
+func makeCommandCatch(cfg *Config, client *PokeClient) func() error {
+	return func() error {
+		bytes, err := client.Get(cfg.API + "pokemon/" + cfg.CaptureTarget)
+		if err != nil {
+			return fmt.Errorf("error getting pokemon data: %w", err)
+		}
+
+		catch_response := Pokemon{}
+		err = json.Unmarshal(bytes, &catch_response)
+		if err != nil {
+			return fmt.Errorf("error getting pokemon data: %w", err)
+		}
+
+		fmt.Printf("Throwing a Pokeball at %s...\n", catch_response.Name)
+		fmt.Printf("Caught %s!\n", catch_response.Name)
+		cfg.Pokedex.KnownPokemon[catch_response.Name] = catch_response
+
+		return nil
+	}
 }
 
 func makeCommandExplore(cfg *Config, client *PokeClient) func() error {
