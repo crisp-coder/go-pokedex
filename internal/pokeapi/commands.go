@@ -33,6 +33,7 @@ func MakeCommandRegistry(cfg *Config, client *PokeClient) map[string]CLICommand 
 	commandExplore := makeCommandExplore(cfg, client)
 	commandCatch := makeCommandCatch(cfg, client)
 	commandInspect := makeCommandInspect(cfg)
+	commandPokedex := makeCommandPokedex(cfg)
 
 	command_registry["exit"] = CLICommand{
 		Name:        "exit",
@@ -69,8 +70,24 @@ func MakeCommandRegistry(cfg *Config, client *PokeClient) map[string]CLICommand 
 		Description: "List height, weight, stats, types of pokemon. Accepts a Name.",
 		Callback:    commandInspect,
 	}
+	command_registry["pokedex"] = CLICommand{
+		Name:        "pokedex",
+		Description: "Lists all pokemon in user's pokedex.",
+		Callback:    commandPokedex,
+	}
 
 	return command_registry
+}
+
+func makeCommandPokedex(cfg *Config) func() error {
+	return func() error {
+		fmt.Printf("Your Pokedex:\n")
+		pokedex := cfg.Pokedex
+		for _, pokemon := range pokedex.KnownPokemon {
+			fmt.Printf(" - %v\n", pokemon.Name)
+		}
+		return nil
+	}
 }
 
 func makeCommandInspect(cfg *Config) func() error {
