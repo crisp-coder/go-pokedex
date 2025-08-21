@@ -45,29 +45,8 @@ func main() {
 			continue
 		}
 
-		if pokedex_command.Name == "explore" {
-			if len(cleanedInput) == 2 {
-				cfg.ExploreTarget = cleanedInput[1]
-			} else {
-				fmt.Println("Missing location area name.")
-				continue
-			}
-		}
-
-		if pokedex_command.Name == "catch" {
-			if len(cleanedInput) == 2 {
-				cfg.CaptureTarget = cleanedInput[1]
-			} else {
-				fmt.Println("Missing pokemon name.")
-			}
-		}
-
-		if pokedex_command.Name == "inspect" {
-			if len(cleanedInput) == 2 {
-				cfg.InspectTarget = cleanedInput[1]
-			} else {
-				fmt.Println("Missing pokemaon name.")
-			}
+		if len(cleanedInput) == 2 {
+			cfg.CommandParams = cleanedInput[1:]
 		}
 
 		// Run command

@@ -10,10 +10,8 @@ type Config struct {
 	API           string
 	NextArea      string
 	PrevArea      string
-	ExploreTarget string
-	CaptureTarget string
-	InspectTarget string
 	Pokedex       TempPokedex
+	CommandParams []string
 }
 
 type TempPokedex struct {
@@ -77,12 +75,18 @@ func MakeCommandRegistry(cfg *Config, client *PokeClient) map[string]CLICommand 
 
 func makeCommandInspect(cfg *Config) func() error {
 	return func() error {
-		if pokemon, ok := cfg.Pokedex.KnownPokemon[cfg.InspectTarget]; ok {
+		if pokemon, ok := cfg.Pokedex.KnownPokemon[cfg.CommandParams[0]]; ok {
 			fmt.Printf("Name: %s\n", pokemon.Name)
 			fmt.Printf("Height: %v\n", pokemon.Height)
 			fmt.Printf("Weight: %v\n", pokemon.Weight)
 			fmt.Printf("Stats:\n")
+			for _, stat := range pokemon.Stats {
+				fmt.Printf(" - %v: %v\n", stat.Stat.Name, stat.Base_stat)
+			}
 			fmt.Printf("Types:\n")
+			for _, poke_type := range pokemon.Types {
+				fmt.Printf(" - %v\n", poke_type.Type.Name)
+			}
 
 		} else {
 			fmt.Println("You have not caught that pokemon.")
@@ -94,7 +98,7 @@ func makeCommandInspect(cfg *Config) func() error {
 
 func makeCommandCatch(cfg *Config, client *PokeClient) func() error {
 	return func() error {
-		bytes, err := client.Get(cfg.API + "pokemon/" + cfg.CaptureTarget)
+		bytes, err := client.Get(cfg.API + "pokemon/" + cfg.CommandParams[0])
 		if err != nil {
 			return fmt.Errorf("error getting pokemon data: %w", err)
 		}
@@ -115,7 +119,7 @@ func makeCommandCatch(cfg *Config, client *PokeClient) func() error {
 
 func makeCommandExplore(cfg *Config, client *PokeClient) func() error {
 	return func() error {
-		bytes, err := client.Get(cfg.API + "location-area/" + cfg.ExploreTarget)
+		bytes, err := client.Get(cfg.API + "location-area/" + cfg.CommandParams[0])
 		if err != nil {
 			return fmt.Errorf("error getting explore area data: %w", err)
 		}

@@ -211,12 +211,49 @@ type PokemonEncounter struct {
 
 type Pokemon struct {
 	Id              int
-	Name            string `json:"name"`
-	Base_experience int
-	Height          int
-	Is_default      bool
-	Order           int
-	Weight          int
+	Name            string        `json:"name"`
+	Base_experience int           `json:"base_experience"`
+	Height          int           `json:"height"`
+	Is_default      bool          `json:"is_default"`
+	Order           int           `json:"order"`
+	Weight          int           `json:"weight"`
+	Stats           []PokemonStat `json:"stats"`
+	Types           []PokemonType `json:"types"`
+}
+
+type PokemonStat struct {
+	Stat      NamedAPIResource `json:"stat"`
+	Effort    int              `json:"effort"`
+	Base_stat int              `json:"base_stat"`
+}
+
+type Stat struct {
+	Id             int
+	Name           string
+	Game_index     int
+	Is_battle_only bool
+	//Affecting_moves MoveStatAffectSets
+	//Characteristics []APIResource
+	//Move_damage_class NamedAPIResource
+	Names []Name
+}
+
+type PokemonType struct {
+	Slot int
+	Type NamedAPIResource
+}
+
+type Type_t struct {
+	Id   int    `json:"id"`
+	Name string `json:"name"`
+	//Damage_reslations TypeRelations
+	//Past_damage_relations []TypeRelationsPast
+	//game_indices      []GenerationGameIndex
+	//generation        NamedAPIResource
+	//move_damage_class NamedAPIResource
+	//names             []Name
+	//pokemon           []TypePokemon
+	//moves             []NamedAPIResource
 }
 
 type Location struct {
