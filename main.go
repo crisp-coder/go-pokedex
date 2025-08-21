@@ -62,6 +62,14 @@ func main() {
 			}
 		}
 
+		if pokedex_command.Name == "inspect" {
+			if len(cleanedInput) == 2 {
+				cfg.InspectTarget = cleanedInput[1]
+			} else {
+				fmt.Println("Missing pokemaon name.")
+			}
+		}
+
 		// Run command
 		err := pokedex_command.Callback()
 		if err != nil {

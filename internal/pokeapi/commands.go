@@ -12,6 +12,7 @@ type Config struct {
 	PrevArea      string
 	ExploreTarget string
 	CaptureTarget string
+	InspectTarget string
 	Pokedex       TempPokedex
 }
 
@@ -33,6 +34,7 @@ func MakeCommandRegistry(cfg *Config, client *PokeClient) map[string]CLICommand 
 	commandMapb := makeCommandMapb(cfg, client)
 	commandExplore := makeCommandExplore(cfg, client)
 	commandCatch := makeCommandCatch(cfg, client)
+	commandInspect := makeCommandInspect(cfg)
 
 	command_registry["exit"] = CLICommand{
 		Name:        "exit",
@@ -64,8 +66,30 @@ func MakeCommandRegistry(cfg *Config, client *PokeClient) map[string]CLICommand 
 		Description: "Attempt to catch a pokemon. Accepts a Name.",
 		Callback:    commandCatch,
 	}
+	command_registry["inspect"] = CLICommand{
+		Name:        "inspect",
+		Description: "List height, weight, stats, types of pokemon. Accepts a Name.",
+		Callback:    commandInspect,
+	}
 
 	return command_registry
+}
+
+func makeCommandInspect(cfg *Config) func() error {
+	return func() error {
+		if pokemon, ok := cfg.Pokedex.KnownPokemon[cfg.InspectTarget]; ok {
+			fmt.Printf("Name: %s\n", pokemon.Name)
+			fmt.Printf("Height: %v\n", pokemon.Height)
+			fmt.Printf("Weight: %v\n", pokemon.Weight)
+			fmt.Printf("Stats:\n")
+			fmt.Printf("Types:\n")
+
+		} else {
+			fmt.Println("You have not caught that pokemon.")
+		}
+
+		return nil
+	}
 }
 
 func makeCommandCatch(cfg *Config, client *PokeClient) func() error {
